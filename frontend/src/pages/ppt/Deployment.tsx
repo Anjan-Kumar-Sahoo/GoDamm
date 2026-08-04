@@ -9,7 +9,7 @@ const deployTech = [
   { label: "Docker", icon: "🐳", color: "#2496ED" },
   { label: "Docker Compose", icon: "📦", color: "#2496ED" },
   { label: "GitHub Actions", icon: "🚀", color: "#2088FF" },
-  { label: "AWS EC2", icon: "☁️", color: "#FF9900" },
+  { label: "Linux VM", icon: "☁️", color: "#FF9900" },
   { label: "Nginx", icon: "🌐", color: "#009639" },
   { label: "Certbot", icon: "🔒", color: "#34D399" },
   { label: "Vercel", icon: "▲", color: "#FFFFFF" },
@@ -48,9 +48,9 @@ const pipelineSteps = [
     color: "#2496ED",
   },
   {
-    title: "SSH Deploy to EC2",
+    title: "SSH Deploy to Server",
     icon: "🖥️",
-    desc: "Pulls latest image on EC2, restarts via Docker Compose",
+    desc: "Pulls latest image on Linux server, restarts via Docker Compose",
     color: "#FF9900",
   },
   {
@@ -70,7 +70,7 @@ const infraNodes = [
     domains: ["godamm.mraks.dev", "godamm.anjaliv.dev"],
   },
   {
-    label: "AWS EC2",
+    label: "Linux VM",
     sublabel: "Backend + DB + Cache",
     icon: "☁️",
     color: "#FF9900",
@@ -155,7 +155,7 @@ export default function Deployment() {
       {/* ─────────── CI/CD PIPELINE ─────────── */}
       <SectionBlock
         title="CI/CD Pipeline"
-        subtitle="GitHub Actions → Docker Hub → EC2 — fully automated"
+        subtitle="GitHub Actions → Docker Hub → Linux Server — fully automated"
         accentColor="#2088FF"
       >
         {/* Horizontal pipeline visualization */}
@@ -231,10 +231,10 @@ jobs:
           docker build -t user/inventory-backend:latest .
           docker push user/inventory-backend:latest
 
-      - name: Deploy to EC2 via SSH
+      - name: Deploy to Server via SSH
         run: |
-          ssh ec2-user@api.godamm.mraks.dev \\
-            "cd /opt/godamm && docker compose pull && \\
+          ssh user@api.godamm.mraks.dev \
+            "cd /home/ubuntu/apps/godamm && docker compose pull && \
              docker compose up -d --remove-orphans"`}
         </CodeWindow>
       </section>
@@ -312,20 +312,20 @@ jobs:
         />
       </SectionBlock>
 
-      {/* ─────────── EC2 BOOTSTRAP ─────────── */}
+      {/* ─────────── LINUX SERVER BOOTSTRAP ─────────── */}
       <SectionBlock
-        title="EC2 Host Setup"
-        subtitle="One-command bootstrap for a fresh Amazon Linux instance"
+        title="Linux Host Setup"
+        subtitle="One-command bootstrap for a fresh Linux VM instance"
         accentColor="#FF9900"
       >
         <FlowStep
           step="1"
           title="System Bootstrap"
-          description="Install Docker, Docker Compose, Nginx, and Certbot. Configure 2GB swap for 4GB instances."
-          code={`# setup-ec2-4gb.sh
-sudo dnf install -y docker nginx certbot
+          description="Install Docker, Docker Compose, Nginx, and Certbot. Configure 4GB swap for 4GB instances."
+          code={`# setup-server.sh
+sudo apt-get update && sudo apt-get install -y docker.io nginx certbot
 sudo systemctl enable docker nginx
-sudo fallocate -l 2G /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile`}
+sudo fallocate -l 4G /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile`}
           accentColor="#FF9900"
         />
         <FlowStep

@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Idempotent host bootstrap for a 4 GB Ubuntu EC2 VM using Docker Compose.
+# Idempotent host bootstrap for a 4 GB Ubuntu Linux VM using Docker Compose.
 SWAP_SIZE_GB="${SWAP_SIZE_GB:-4}"
 APP_USER="${APP_USER:-ubuntu}"
-APP_DIR="${APP_DIR:-/home/${APP_USER}/GoDamm}"
+APP_DIR="${APP_DIR:-/home/${APP_USER}/apps/GoDamm}"
 REPO_URL="${REPO_URL:-https://github.com/Anjan-Kumar-Sahoo/GoDamm.git}"
 
 require_root() {
   if [[ "${EUID}" -ne 0 ]]; then
-    echo "Run as root: sudo bash deploy/ec2-single-node/setup-ec2-4gb.sh"
+    echo "Run as root: sudo bash deploy/linux-single-node/setup-server.sh"
     exit 1
   fi
 }
@@ -47,6 +47,7 @@ configure_firewall() {
 
 clone_or_update_repo() {
   if [[ ! -d "${APP_DIR}/.git" ]]; then
+    mkdir -p "$(dirname "${APP_DIR}")"
     git clone "${REPO_URL}" "${APP_DIR}"
   else
     git -C "${APP_DIR}" fetch --all --prune
@@ -96,8 +97,8 @@ main() {
   echo "Host bootstrap complete."
   echo "Next steps:"
   echo "1) Edit ${APP_DIR}/.env and set real secrets"
-  echo "2) Install Nginx config from deploy/ec2-single-node/nginx-inventory.conf"
-  echo "3) Run: sudo -u ${APP_USER} bash ${APP_DIR}/deploy/ec2-single-node/deploy-app.sh"
+  echo "2) Install Nginx config from deploy/linux-single-node/nginx-inventory.conf"
+  echo "3) Run: sudo -u ${APP_USER} bash ${APP_DIR}/deploy/linux-single-node/deploy-app.sh"
 }
 
 main "$@"

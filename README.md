@@ -47,7 +47,7 @@ cd GoDamm
 
 # Godamm Inventory Management System
 
-Production-ready full-stack inventory platform with secure auth, OTP workflows, tenant-safe data isolation, Redis caching, and EC2/Vercel deployment support.
+Production-ready full-stack inventory platform with secure auth, OTP workflows, tenant-safe data isolation, Redis caching, and Linux VM / Vercel deployment support.
 
 ## Live Domains
 
@@ -60,13 +60,13 @@ Production-ready full-stack inventory platform with secure auth, OTP workflows, 
 ```mermaid
 flowchart LR
 		U[User Browser] --> V[Vercel Frontend\nReact + Vite]
-		V -->|HTTPS /api + /auth| N[Nginx on EC2]
+		V -->|HTTPS /api + /auth| N[Nginx on Linux Server]
 		N -->|Reverse proxy| B[Spring Boot Backend]
 		B --> M[(MySQL)]
 		B --> R[(Redis)]
 		B --> S[SMTP Provider]
 		G[GitHub Actions] --> D[Docker Hub]
-		G --> E[EC2 Deploy via SSH]
+		G --> E[Linux Server Deploy via SSH]
 		E --> N
 		E --> B
 ```
@@ -76,14 +76,14 @@ flowchart LR
 - Backend: Java 17, Spring Boot 3, Spring Security, JWT, Flyway, Redis Cache, Actuator
 - Frontend: React 18, TypeScript, Vite, Tailwind CSS, Framer Motion
 - Data: MySQL 8, Redis 7
-- DevOps: Docker, Docker Compose, GitHub Actions, Nginx, Certbot, AWS EC2
+- DevOps: Docker, Docker Compose, GitHub Actions, Nginx, Certbot, Linux VM (Azure, AWS, GCP, etc.)
 
 ## Repository Structure
 
 ```text
 backend/                    Spring Boot application
 frontend/                   React + Vite application
-deploy/ec2-single-node/     EC2 scripts, Nginx config, service units
+deploy/linux-single-node/   Linux deployment scripts, Nginx config, service units
 .github/workflows/          CI/CD workflows
 docker-compose.yml          Backend + MySQL + Redis stack
 .env.example                Environment template
@@ -171,33 +171,33 @@ Pipeline steps:
 3. Build + test (`mvn clean verify`)
 4. Build Docker image
 5. Push image to Docker Hub
-6. SSH into EC2
+6. SSH into Linux Server
 7. Pull commit-SHA image and restart backend container
 
 ### Required GitHub Secrets
 
 - DOCKER_PASSWORD
-- EC2_HOST
-- EC2_USER
-- EC2_SSH_KEY
+- SERVER_HOST
+- SERVER_USER
+- SERVER_SSH_KEY
 
-## AWS EC2 Deployment
+## Linux Server Deployment
 
-Detailed runbook: `deploy/ec2-single-node/README.md`
+Detailed runbook: `deploy/linux-single-node/README.md`
 
 Quick path:
 
 ```bash
-sudo bash deploy/ec2-single-node/setup-ec2-4gb.sh
-cd ~/GoDamm
-cp deploy/ec2-single-node/backend.env.example .env
+sudo bash deploy/linux-single-node/setup-server.sh
+cd ~/apps/GoDamm
+cp deploy/linux-single-node/backend.env.example .env
 nano .env
-bash deploy/ec2-single-node/deploy-app.sh
+bash deploy/linux-single-node/deploy-app.sh
 ```
 
 Nginx config file:
 
-- `deploy/ec2-single-node/nginx-inventory.conf`
+- `deploy/linux-single-node/nginx-inventory.conf`
 
 Enable HTTPS:
 
@@ -205,19 +205,19 @@ Enable HTTPS:
 sudo certbot --nginx -d api.godamm.mraks.dev
 ```
 
-### Using AWS RDS MySQL (optional)
+### Using External Managed MySQL (optional)
 
-Set these values in EC2 `.env`:
+Set these values in `.env`:
 
-- DB_URL=jdbc:mysql://<rds-endpoint>:3306/godamm?useSSL=true&requireSSL=true&serverTimezone=UTC
-- DB_USERNAME=<rds-username>
-- DB_PASSWORD=<rds-password>
+- DB_URL=jdbc:mysql://<database-endpoint>:3306/godamm?useSSL=true&requireSSL=true&serverTimezone=UTC
+- DB_USERNAME=<db-username>
+- DB_PASSWORD=<db-password>
 
 Notes:
 
-- Allow port 3306 in RDS security group from the EC2 security group.
+- Allow port 3306 in database security group/firewall from the server IP.
 - Keep `BACKEND_IMAGE` pinned to a commit SHA tag.
-- `deploy/ec2-single-node/deploy-app.sh` will skip local mysql container automatically when DB_URL is external.
+- `deploy/linux-single-node/deploy-app.sh` will skip local mysql container automatically when DB_URL is external.
 
 ## Security Hardening
 
@@ -260,12 +260,12 @@ mvn clean verify
 
 CI fails on test/build failures by default.
 
-## One-command Deploy on EC2
+## One-command Deploy on Linux Server
 
 After bootstrap and `.env` setup:
 
 ```bash
-bash deploy/ec2-single-node/deploy-app.sh
+bash deploy/linux-single-node/deploy-app.sh
 ```
 
 This pulls the commit-SHA backend image and applies container updates using Docker Compose.

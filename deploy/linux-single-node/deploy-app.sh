@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-APP_DIR="${APP_DIR:-$HOME/GoDamm}"
+APP_DIR="${APP_DIR:-$HOME/apps/GoDamm}"
 
 require_non_root() {
   if [[ "${EUID}" -eq 0 ]]; then

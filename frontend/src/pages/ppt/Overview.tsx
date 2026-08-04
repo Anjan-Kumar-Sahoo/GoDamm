@@ -79,7 +79,7 @@ const techStack = [
   { label: "Redis", icon: "⚡", color: "#DC382D", category: "Data" },
   { label: "Docker", icon: "🐳", color: "#2496ED", category: "DevOps" },
   { label: "GitHub Actions", icon: "🚀", color: "#2088FF", category: "DevOps" },
-  { label: "AWS EC2", icon: "☁️", color: "#FF9900", category: "DevOps" },
+  { label: "Linux VM", icon: "☁️", color: "#FF9900", category: "DevOps" },
   { label: "Nginx", icon: "🌐", color: "#009639", category: "DevOps" },
 ];
 
@@ -388,7 +388,7 @@ export default function Overview() {
           />
           <GlowCard
             title="Deployment"
-            description="CI/CD pipeline with Docker, GitHub Actions, EC2, Nginx, and Certbot HTTPS"
+            description="CI/CD pipeline with Docker, GitHub Actions, Linux VM, Nginx, and Certbot HTTPS"
             link="/ppt/deployment"
             icon="🚀"
             accentColor="#34D399"

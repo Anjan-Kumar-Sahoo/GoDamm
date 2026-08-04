@@ -62,8 +62,8 @@ jobs:
           tags: |
             ${{ env.DOCKERHUB_USERNAME }}/godamm-backend:${{ github.sha }}
 
-  deploy-ec2:
-    name: Deploy Backend to EC2
+  deploy-server:
+    name: Deploy Backend to Linux Server
     runs-on: ubuntu-latest
     needs: build-and-push-image
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
@@ -72,19 +72,19 @@ jobs:
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v1.2.0
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
           script_stop: true
           script: |
             set -euo pipefail
-            cd "$HOME/GoDamm"
+            cd "$HOME/apps/GoDamm"
 
             if [ ! -f .env ]; then
               cp .env.example .env
             fi
 
             export BACKEND_IMAGE=${{ env.DOCKERHUB_USERNAME }}/godamm-backend:${{ github.sha }}
-            chmod +x deploy/ec2-single-node/deploy-app.sh
-            bash deploy/ec2-single-node/deploy-app.sh
+            chmod +x deploy/linux-single-node/deploy-app.sh
+            bash deploy/linux-single-node/deploy-app.sh
             docker image prune -f

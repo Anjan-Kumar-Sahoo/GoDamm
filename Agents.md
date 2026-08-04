@@ -70,7 +70,7 @@ We have moved away from traditional spreadsheet-link designs. The system now fol
   - Cache provider is selectable (`simple` local in-memory by default, `redis` when configured via environment).
   - Write paths (product/supplier CRUD and sales mutations) evict affected cache entries to preserve consistency.
 - **Deployment Operations**:
-  - EC2 single-node deployment assets are located in `deploy/ec2-single-node/`.
+  - Single-node Linux VM deployment assets are located in `deploy/linux-single-node/`.
   - Includes host bootstrap (swap + Docker + Nginx + Certbot), Docker Compose deploy script, systemd unit templates, nginx reverse-proxy template, and deployment runbook.
 - **Data Isolation Model**:
   - Inventory entities (`Supplier`, `Product`, `Sale`, `ProfitRecord`, `Order`) are user-owned via `user_id`.
@@ -78,7 +78,7 @@ We have moved away from traditional spreadsheet-link designs. The system now fol
 
 ### 🌐 Domain Topology
 - **Frontend (Vercel)**: `godamm.mraks.dev`, `godamm.anjaliv.dev`
-- **Backend API (EC2 + Nginx)**: `api.godamm.mraks.dev`
+- **Backend API (Linux Server + Nginx)**: `api.godamm.mraks.dev`
 
 ---
 
@@ -150,16 +150,16 @@ We use atomic SQL updates for stock management to prevent race conditions during
 - [x] Add cache configuration with per-cache TTL profiles and local fallback cache manager.
 - [x] Cache user-scoped reads for products/suppliers/profit and evict on product, supplier, and sale writes.
 
-### 📅 Phase 10: EC2 Single-Node Deployment Pack (Completed)
-- [x] Add `deploy/ec2-single-node/setup-ec2-4gb.sh` for package install, swap tuning, Docker/Compose setup, and Nginx/Certbot host prep.
+### 📅 Phase 10: Cloud-Agnostic Linux Single-Node Deployment Pack (Completed)
+- [x] Add `deploy/linux-single-node/setup-server.sh` for package install, swap tuning, Docker/Compose setup, and Nginx/Certbot host prep.
 - [x] Add `docker-compose.yml` for backend + MySQL + Redis with persistent volumes and health checks.
-- [x] Add `deploy/ec2-single-node/inventory-backend.service` and `deploy/ec2-single-node/godamm-stack.service` for managed Docker Compose startup.
-- [x] Add `deploy/ec2-single-node/nginx-inventory.conf` for API-only reverse proxy on `api.godamm.mraks.dev` with HTTPS and security headers.
-- [x] Add `deploy/ec2-single-node/deploy-app.sh`, backend env template, and deployment README for repeatable publish flow.
+- [x] Add `deploy/linux-single-node/inventory-backend.service` and `deploy/linux-single-node/godamm-stack.service` for managed Docker Compose startup.
+- [x] Add `deploy/linux-single-node/nginx-inventory.conf` for API-only reverse proxy on `api.godamm.mraks.dev` with HTTPS and security headers.
+- [x] Add `deploy/linux-single-node/deploy-app.sh`, backend env template, and deployment README for repeatable publish flow.
 
 ### 📅 Phase 11: Production Hardening + CI/CD (Completed)
 - [x] Add backend multi-stage Dockerfile (`openjdk:17-jdk-slim` runtime) and healthcheck integration (`/actuator/health`).
-- [x] Add GitHub Actions workflow for backend build/test, Docker Hub push, and EC2 SSH deploy.
+- [x] Add GitHub Actions workflow for backend build/test, Docker Hub push, and Linux server SSH deploy.
 - [x] Expand backend runtime config with strict env-driven CORS, optional HTTPS enforcement, Redis-backed rate limiting, Hikari pooling, and actuator metrics exposure.
 - [x] Add validation constraints to inventory DTOs and controller request payloads for stronger API safety.
 - [x] Update root README with architecture diagram, env variables, deployment path, and one-command deploy flow.
