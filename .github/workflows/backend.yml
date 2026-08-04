@@ -79,6 +79,8 @@ jobs:
           script: |
             set -euo pipefail
             cd "$HOME/apps/GoDamm"
+            git fetch origin main
+            git reset --hard origin/main
 
             if [ ! -f .env ]; then
               if [ -f deploy/linux-single-node/backend.env.example ]; then
