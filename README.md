@@ -83,7 +83,6 @@ flowchart LR
 ```text
 backend/                    Spring Boot application
 frontend/                   React + Vite application
-deploy/linux-single-node/   Linux deployment scripts, Nginx config, service units
 .github/workflows/          CI/CD workflows
 docker-compose.yml          Backend + MySQL + Redis stack
 .env.example                Environment template
@@ -157,67 +156,45 @@ npm run dev
 - Health check endpoint: /actuator/health
 - Compose stack includes:
 	- backend
-	- mysql (persistent volume, optional when using external RDS)
+	- mysql (persistent volume)
 	- redis (password-protected)
 
-## CI/CD (GitHub Actions)
+## CI/CD & Deployment
 
-Workflow: `.github/workflows/backend.yml`
+The application uses an automated continuous deployment pipeline powered by GitHub Actions, Docker Hub, and Docker Compose on an Azure Linux VM.
 
-Pipeline steps:
+```text
+GitHub (push to main)
+        ↓
+GitHub Actions (build & test)
+        ↓
+Build & Push Docker Image (aksahoo1097/godamm-backend:latest)
+        ↓
+SSH into Azure VM
+        ↓
+docker compose pull backend
+        ↓
+docker compose up -d backend
+```
 
-1. Checkout
-2. Setup Java 17
-3. Build + test (`mvn clean verify`)
-4. Build Docker image
-5. Push image to Docker Hub
-6. SSH into Linux Server
-7. Pull commit-SHA image and restart backend container
+### Pipeline Steps (`.github/workflows/backend.yml`)
+
+1. **Build & Test:** Compiles Java 17 and runs Maven unit and integration tests (`mvn clean verify`).
+2. **Build & Push Image:** Builds the production Docker image and pushes `latest` and commit SHA tags to Docker Hub.
+3. **SSH Deploy:** Connects to the Azure VM and executes:
+   ```bash
+   cd ~/apps/GoDamm
+   docker compose pull backend
+   docker compose up -d backend
+   docker image prune -f
+   ```
 
 ### Required GitHub Secrets
 
-- DOCKER_PASSWORD
-- SERVER_HOST
-- SERVER_USER
-- SERVER_SSH_KEY
-
-## Linux Server Deployment
-
-Detailed runbook: `deploy/linux-single-node/README.md`
-
-Quick path:
-
-```bash
-sudo bash deploy/linux-single-node/setup-server.sh
-cd ~/apps/GoDamm
-cp deploy/linux-single-node/backend.env.example .env
-nano .env
-bash deploy/linux-single-node/deploy-app.sh
-```
-
-Nginx config file:
-
-- `deploy/linux-single-node/nginx-inventory.conf`
-
-Enable HTTPS:
-
-```bash
-sudo certbot --nginx -d api.godamm.mraks.dev
-```
-
-### Using External Managed MySQL (optional)
-
-Set these values in `.env`:
-
-- DB_URL=jdbc:mysql://<database-endpoint>:3306/godamm?useSSL=true&requireSSL=true&serverTimezone=UTC
-- DB_USERNAME=<db-username>
-- DB_PASSWORD=<db-password>
-
-Notes:
-
-- Allow port 3306 in database security group/firewall from the server IP.
-- Keep `BACKEND_IMAGE` pinned to a commit SHA tag.
-- `deploy/linux-single-node/deploy-app.sh` will skip local mysql container automatically when DB_URL is external.
+- `DOCKER_PASSWORD`
+- `SERVER_HOST`
+- `SERVER_USER`
+- `SERVER_SSH_KEY`
 
 ## Security Hardening
 
@@ -247,7 +224,7 @@ Logging:
 - Redis cache for product/supplier/profit reads
 - Cache eviction on writes
 - HikariCP pool tuning via env vars
-- 4 GB deployment profile tuned for small production usage
+- 4 GB deployment profile tuned for production usage
 
 ## Testing
 
@@ -259,13 +236,3 @@ mvn clean verify
 ```
 
 CI fails on test/build failures by default.
-
-## One-command Deploy on Linux Server
-
-After bootstrap and `.env` setup:
-
-```bash
-bash deploy/linux-single-node/deploy-app.sh
-```
-
-This pulls the commit-SHA backend image and applies container updates using Docker Compose.

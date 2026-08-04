@@ -80,18 +80,12 @@ jobs:
           script: |
             set -euo pipefail
             cd "$HOME/apps/GoDamm"
-            git fetch origin main
-            git reset --hard origin/main
 
             if [ ! -f .env ]; then
-              if [ -f deploy/linux-single-node/backend.env.example ]; then
-                cp deploy/linux-single-node/backend.env.example .env
-              elif [ -f .env.example ]; then
-                cp .env.example .env
-              fi
+              cp .env.example .env
             fi
 
             export BACKEND_IMAGE=${{ env.DOCKERHUB_USERNAME }}/godamm-backend:latest
-            chmod +x deploy/linux-single-node/deploy-app.sh
-            bash deploy/linux-single-node/deploy-app.sh
+            docker compose pull backend
+            docker compose up -d backend
             docker image prune -f

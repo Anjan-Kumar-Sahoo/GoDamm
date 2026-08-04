@@ -50,10 +50,7 @@ services:
       - godamm-network
 
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    image: ${BACKEND_IMAGE:?Set BACKEND_IMAGE to an immutable image tag (for example docker.io/aksahoo1097/godamm-backend:<git-sha>)}
+    image: ${BACKEND_IMAGE:-aksahoo1097/godamm-backend:latest}
     container_name: godamm-backend
     restart: unless-stopped
     env_file:

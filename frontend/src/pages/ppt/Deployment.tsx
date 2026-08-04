@@ -312,45 +312,6 @@ jobs:
         />
       </SectionBlock>
 
-      {/* ─────────── LINUX SERVER BOOTSTRAP ─────────── */}
-      <SectionBlock
-        title="Linux Host Setup"
-        subtitle="One-command bootstrap for a fresh Linux VM instance"
-        accentColor="#FF9900"
-      >
-        <FlowStep
-          step="1"
-          title="System Bootstrap"
-          description="Install Docker, Docker Compose, Nginx, and Certbot. Configure 4GB swap for 4GB instances."
-          code={`# setup-server.sh
-sudo apt-get update && sudo apt-get install -y docker.io nginx certbot
-sudo systemctl enable docker nginx
-sudo fallocate -l 4G /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile`}
-          accentColor="#FF9900"
-        />
-        <FlowStep
-          step="2"
-          title="Systemd Services"
-          description="Docker Compose stack managed as a systemd unit for automatic startup on reboot."
-          code={`# godamm-stack.service
-[Service]
-WorkingDirectory=/opt/godamm
-ExecStart=/usr/bin/docker compose up
-ExecStop=/usr/bin/docker compose down
-Restart=always`}
-          accentColor="#A78BFA"
-        />
-        <FlowStep
-          step="3"
-          title="Deploy Script"
-          description="Pull latest images, apply env config, restart stack — zero-downtime rotation."
-          code={`# deploy-app.sh
-docker compose pull
-docker compose up -d --remove-orphans
-docker system prune -f`}
-          accentColor="#34D399"
-        />
-      </SectionBlock>
 
       {/* ─────────── DOCKERFILE ─────────── */}
       <section className="max-w-5xl mx-auto px-4 mb-8">

@@ -70,8 +70,8 @@ We have moved away from traditional spreadsheet-link designs. The system now fol
   - Cache provider is selectable (`simple` local in-memory by default, `redis` when configured via environment).
   - Write paths (product/supplier CRUD and sales mutations) evict affected cache entries to preserve consistency.
 - **Deployment Operations**:
-  - Single-node Linux VM deployment assets are located in `deploy/linux-single-node/`.
-  - Includes host bootstrap (swap + Docker + Nginx + Certbot), Docker Compose deploy script, systemd unit templates, nginx reverse-proxy template, and deployment runbook.
+  - Simplified production deployment model: GitHub Actions → Docker Hub → Azure VM via Docker Compose.
+  - No build scripts or custom helper scripts in repository; application code strictly separated from infrastructure setup.
 - **Data Isolation Model**:
   - Inventory entities (`Supplier`, `Product`, `Sale`, `ProfitRecord`, `Order`) are user-owned via `user_id`.
   - Repository/service methods are user-scoped to enforce per-login store isolation.
@@ -150,12 +150,10 @@ We use atomic SQL updates for stock management to prevent race conditions during
 - [x] Add cache configuration with per-cache TTL profiles and local fallback cache manager.
 - [x] Cache user-scoped reads for products/suppliers/profit and evict on product, supplier, and sale writes.
 
-### 📅 Phase 10: Cloud-Agnostic Linux Single-Node Deployment Pack (Completed)
-- [x] Add `deploy/linux-single-node/setup-server.sh` for package install, swap tuning, Docker/Compose setup, and Nginx/Certbot host prep.
-- [x] Add `docker-compose.yml` for backend + MySQL + Redis with persistent volumes and health checks.
-- [x] Add `deploy/linux-single-node/inventory-backend.service` and `deploy/linux-single-node/godamm-stack.service` for managed Docker Compose startup.
-- [x] Add `deploy/linux-single-node/nginx-inventory.conf` for API-only reverse proxy on `api.godamm.mraks.dev` with HTTPS and security headers.
-- [x] Add `deploy/linux-single-node/deploy-app.sh`, backend env template, and deployment README for repeatable publish flow.
+### 📅 Phase 10: Simplified Docker Compose Production Architecture (Completed)
+- [x] Streamline deployment model to GitHub Actions → Docker Hub → Azure VM using Docker Compose.
+- [x] Remove legacy deployment directory and custom shell scripts.
+- [x] Update `docker-compose.yml` backend service to consume pre-built Docker Hub images directly (`aksahoo1097/godamm-backend:latest`).
 
 ### 📅 Phase 11: Production Hardening + CI/CD (Completed)
 - [x] Add backend multi-stage Dockerfile (`openjdk:17-jdk-slim` runtime) and healthcheck integration (`/actuator/health`).
