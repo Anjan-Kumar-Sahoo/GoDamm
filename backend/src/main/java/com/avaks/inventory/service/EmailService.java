@@ -3,14 +3,17 @@ package com.avaks.inventory.service;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EmailService {
@@ -21,6 +24,7 @@ public class EmailService {
     private String senderEmail;
 
     public void sendOtpEmail(String to, String storeName, String otp, long expiryMinutes) {
+        log.info("Generated registration OTP for [{}] (Store: {}): {}", to, storeName, otp);
         String html = """
                 <html>
                 <body style='margin:0;padding:0;background:#0b1220;color:#e5e7eb;font-family:Arial,sans-serif;'>
@@ -65,6 +69,7 @@ public class EmailService {
     }
 
     public void sendPasswordResetOtpEmail(String to, String storeName, String otp, long expiryMinutes) {
+        log.info("Generated password reset OTP for [{}] (Store: {}): {}", to, storeName, otp);
         String html = """
                 <html>
                 <body style='margin:0;padding:0;background:#0b1220;color:#e5e7eb;font-family:Arial,sans-serif;'>
@@ -91,7 +96,8 @@ public class EmailService {
 
     private void sendHtmlWithLogo(String to, String subject, String htmlBody) {
         if (senderEmail == null || senderEmail.isBlank()) {
-          throw new IllegalStateException("Mail sender is not configured. Set MAIL_USERNAME in environment.");
+            log.error("Mail sender is not configured. Set MAIL_USERNAME and MAIL_PASSWORD in environment.");
+            throw new MailSendException("Mail sender is not configured. Set MAIL_USERNAME in environment.");
         }
 
         try {
@@ -103,8 +109,10 @@ public class EmailService {
             helper.setText(htmlBody, true);
             helper.addInline("logoImage", new ClassPathResource("static/logo-white-bg.png"));
             mailSender.send(message);
-        } catch (MessagingException ex) {
-            throw new IllegalStateException("Failed to send email", ex);
+            log.info("Successfully sent email [{}] to [{}]", subject, to);
+        } catch (Exception ex) {
+            log.error("Failed to send email [{}] to [{}]: {}", subject, to, ex.getMessage(), ex);
+            throw new MailSendException("Failed to send email to " + to + ": " + ex.getMessage(), ex);
         }
     }
 
