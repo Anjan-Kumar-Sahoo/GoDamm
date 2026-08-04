@@ -60,6 +60,7 @@ jobs:
           file: ./backend/Dockerfile
           push: true
           tags: |
+            ${{ env.DOCKERHUB_USERNAME }}/godamm-backend:latest
             ${{ env.DOCKERHUB_USERNAME }}/godamm-backend:${{ github.sha }}
 
   deploy-server:
@@ -90,7 +91,7 @@ jobs:
               fi
             fi
 
-            export BACKEND_IMAGE=${{ env.DOCKERHUB_USERNAME }}/godamm-backend:${{ github.sha }}
+            export BACKEND_IMAGE=${{ env.DOCKERHUB_USERNAME }}/godamm-backend:latest
             chmod +x deploy/linux-single-node/deploy-app.sh
             bash deploy/linux-single-node/deploy-app.sh
             docker image prune -f
