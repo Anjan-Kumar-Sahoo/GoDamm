@@ -57,7 +57,11 @@ clone_or_update_repo() {
 
 prepare_env_file() {
   if [[ ! -f "${APP_DIR}/.env" ]]; then
-    cp "${APP_DIR}/.env.example" "${APP_DIR}/.env"
+    if [[ -f "${APP_DIR}/deploy/linux-single-node/backend.env.example" ]]; then
+      cp "${APP_DIR}/deploy/linux-single-node/backend.env.example" "${APP_DIR}/.env"
+    elif [[ -f "${APP_DIR}/.env.example" ]]; then
+      cp "${APP_DIR}/.env.example" "${APP_DIR}/.env"
+    fi
   fi
 
   chown -R "${APP_USER}:${APP_USER}" "${APP_DIR}"

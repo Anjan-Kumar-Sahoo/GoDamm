@@ -81,7 +81,11 @@ jobs:
             cd "$HOME/apps/GoDamm"
 
             if [ ! -f .env ]; then
-              cp .env.example .env
+              if [ -f deploy/linux-single-node/backend.env.example ]; then
+                cp deploy/linux-single-node/backend.env.example .env
+              elif [ -f .env.example ]; then
+                cp .env.example .env
+              fi
             fi
 
             export BACKEND_IMAGE=${{ env.DOCKERHUB_USERNAME }}/godamm-backend:${{ github.sha }}
